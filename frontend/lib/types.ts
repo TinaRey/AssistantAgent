@@ -26,3 +26,13 @@ export type Message = {
 };
 
 export type Conversation = { id: string; title: string; messages: Message[]; updatedAt: number };
+
+const TITLE_MAX = 200;
+
+/** Full title from the first user message (the sidebar's CSS ellipsis does the visual truncation). */
+export function conversationTitle(c: Conversation): string {
+  const first = c.messages.find((m) => m.role === "user");
+  if (!first) return "Nouvelle conversation";
+  const text = first.content.replace(/\s+/g, " ").trim();
+  return text.length > TITLE_MAX ? `${text.slice(0, TITLE_MAX)}…` : text;
+}

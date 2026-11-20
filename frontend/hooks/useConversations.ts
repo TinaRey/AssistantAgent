@@ -54,9 +54,7 @@ export function useConversations() {
         .map((c) => {
           if (c.id !== id) return c;
           const messages = fn(c.messages);
-          const firstUser = messages.find((m) => m.role === "user");
-          const title = firstUser ? firstUser.content.slice(0, 40) : c.title;
-          return { ...c, messages, title, updatedAt: Date.now() };
+          return { ...c, messages, updatedAt: Date.now() };
         })
         .sort((a, b) => b.updatedAt - a.updatedAt),
     );
