@@ -11,6 +11,7 @@ type Props = {
 export function Sidebar({
   conversations, activeId, onSelect, onNew, onDelete, onSignOut, width, onResize, onResetWidth,
 }: Props) {
+  const emptyCount = conversations.filter((c) => c.messages.length === 0).length;
   return (
     <aside className="sidebar">
       <h1>Pantalelle</h1>
@@ -18,13 +19,17 @@ export function Sidebar({
       <nav aria-label="Conversations">
         {conversations.map((c) => {
           const title = conversationTitle(c);
+          // An empty chat is deletable only when there are several empty ones.
+          const canDelete = c.messages.length > 0 || emptyCount > 1;
           return (
           <div key={c.id} className={`conv ${c.id === activeId ? "active" : ""}`}>
             <button className="conv-title" title={title} onClick={() => onSelect(c.id)}>{title}</button>
-            <button
-              className="icon" title="Supprimer" aria-label={`Supprimer ${title}`}
-              onClick={() => confirm("Supprimer cette conversation ?") && onDelete(c.id)}
-            >×</button>
+            {canDelete && (
+              <button
+                className="icon" title="Supprimer" aria-label={`Supprimer ${title}`}
+                onClick={() => confirm("Supprimer cette conversation ?") && onDelete(c.id)}
+              >×</button>
+            )}
           </div>
           );
         })}
