@@ -8,7 +8,7 @@ This repository is independent from the Shopify theme repository.
 
 ## Status
 
-Phase 0 (scaffold) complete. See [docs/architecture.md](docs/architecture.md) for the plan.
+Done: scaffold, backend tools/orchestration, password login, French chat UI with editable previews. Next: knowledge base (document upload) and a real search provider. See [docs/architecture.md](docs/architecture.md) for the plan.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ Phase 0 (scaffold) complete. See [docs/architecture.md](docs/architecture.md) fo
 ## Run locally
 
 ```bash
-cp .env.example .env          # fill in values later; not needed to boot Phase 0
+cp .env.example .env          # then set APP_PASSWORD, SECRET_KEY and OPENAI_API_KEY
 
 # Terminal 1: backend  -> http://localhost:8000  (docs at /docs)
 cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8000
@@ -28,7 +28,9 @@ cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8000
 cd frontend && npm install && npm run dev
 ```
 
-The home page shows "Assistant online" when the frontend reaches the backend.
+Open http://localhost:3000 and sign in with `APP_PASSWORD`. The browser only talks to Next.js,
+which proxies `/api/*` to the backend (`BACKEND_URL`), so the session cookie is httpOnly and same-origin.
+Conversations are stored in the browser (localStorage) only.
 
 Or with Docker: `docker compose up --build`.
 
@@ -41,5 +43,5 @@ cd frontend && npm run typecheck && npm run build
 
 ## Environment variables
 
-See [.env.example](.env.example). Only `OPENAI_API_KEY` is needed for Phase 1;
+See [.env.example](.env.example). `APP_PASSWORD`, `SECRET_KEY` and `OPENAI_API_KEY` are needed to use the chat;
 never commit `.env`.
