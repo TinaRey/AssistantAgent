@@ -22,6 +22,7 @@ class FakeLLM:
         self.turns = list(turns or [])
         self.structured_out = list(structured or [])
         self.chat_calls = 0
+        self.structured_messages: list[Any] = []
 
     async def chat(self, messages, tools):  # type: ignore[no-untyped-def]
         self.chat_calls += 1
@@ -33,6 +34,7 @@ class FakeLLM:
         )
 
     async def structured(self, messages, schema):  # type: ignore[no-untyped-def]
+        self.structured_messages.append(messages)
         return self.structured_out.pop(0)
 
 

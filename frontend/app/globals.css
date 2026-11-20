@@ -48,7 +48,7 @@ input, textarea { font: inherit; width: 100%; padding: .55rem .7rem; border: 1px
 .suggestions button { text-align: left; }
 .msg { display: flex; flex-direction: column; gap: .6rem; }
 .msg.user { align-items: flex-end; }
-.bubble { margin: 0; padding: .7rem 1rem; border-radius: 14px; white-space: pre-wrap; max-width: 85%;
+.bubble { margin: 0; overflow-wrap: anywhere; padding: .7rem 1rem; border-radius: 14px; white-space: pre-wrap; max-width: 85%;
   background: var(--panel); border: 1px solid var(--line); }
 .msg.user .bubble { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
 .msg.failed .bubble { border-color: var(--bad); color: var(--bad); }
@@ -95,3 +95,15 @@ input, textarea { font: inherit; width: 100%; padding: .55rem .7rem; border: 1px
 .doclist { list-style: none; margin: .6rem 0 0; padding: 0; display: grid; gap: .5rem; }
 .doclist li { display: flex; justify-content: space-between; align-items: center; gap: .6rem;
   background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: .6rem .9rem; }
+
+/* Markdown inside assistant bubbles */
+.md { white-space: normal; }
+.md > :first-child { margin-top: 0; }
+.md > :last-child { margin-bottom: 0; }
+.md p, .md ul, .md ol { margin: .5em 0; }
+.md ul, .md ol { padding-left: 1.3rem; }
+.md h1, .md h2, .md h3, .md h4 { font-size: 1rem; margin: .9em 0 .3em; font-weight: 600; }
+.md a { color: #1a5fb4; }
+.md code { background: var(--bg); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
+.md table { border-collapse: collapse; font-size: .9rem; }
+.md th, .md td { border: 1px solid var(--line); padding: .3rem .6rem; }

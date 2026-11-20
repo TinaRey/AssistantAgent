@@ -8,7 +8,7 @@ This repository is independent from the Shopify theme repository.
 
 ## Status
 
-Done: scaffold, backend tools/orchestration, password login, French chat UI with editable previews, knowledge base (upload PDF/DOCX/TXT/MD + notes, pgvector search). Next: a real search provider (Phase 4). See [docs/architecture.md](docs/architecture.md) for the plan.
+Done: scaffold, backend tools/orchestration, password login, French chat UI with editable previews, knowledge base (upload PDF/DOCX/TXT/MD + notes, pgvector search). Web research via Tavily (set `SEARCH_API_KEY`). See [docs/architecture.md](docs/architecture.md) for the plan.
 
 ## Prerequisites
 
@@ -61,3 +61,13 @@ Scanned (image-only) PDFs have no text and are rejected with a clear message.
 Database: local Docker Postgres in development; Supabase (EU region) in production by changing only
 `DATABASE_URL`. Schema changes go through Alembic (`uv run alembic upgrade head`).
 Automated tests use the `pantalelle_test` database from the same container and skip themselves if it is down.
+
+## Company research
+
+`search_company` runs three Tavily queries (website, news/partnerships, contacts), then asks the model to
+structure the results. Code then drops any finding or contact whose source URL is not in the results,
+and any email not literally present in a result. Retries: up to 2 on HTTP 429/5xx (Retry-After capped at 5 s);
+quota/key errors are reported in French in the chat. Without `SEARCH_API_KEY` the assistant says nothing was verified.
+Limits to know: Tavily returns page extracts, so professional emails are only found when they appear in them.
+Web content is untrusted: prompts tell the model to ignore instructions inside results, and the assistant only drafts
+(sending/publishing always needs the user).
