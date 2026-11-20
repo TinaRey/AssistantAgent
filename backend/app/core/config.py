@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     max_tool_iterations: int = Field(default=6, ge=1, le=15)
     llm_timeout_s: float = 60.0
     storage_dir: str = "storage"
+    embedding_model: str = "text-embedding-3-small"
+    max_upload_mb: int = 10
 
     @property
     def cors_origin_list(self) -> list[str]:

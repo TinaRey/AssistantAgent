@@ -1,12 +1,33 @@
-# Optional: `docker compose up` runs both services. Postgres is added in Phase 2.
+# `docker compose up -d db` for local Postgres only (recommended for development),
+# or `docker compose up --build` to run everything in containers.
 services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: pantalelle
+      POSTGRES_PASSWORD: pantalelle
+      POSTGRES_DB: pantalelle
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pantalelle -d pantalelle"]
+      interval: 5s
+      retries: 10
   backend:
     build: ./backend
     env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://pantalelle:pantalelle@db:5432/pantalelle
     ports: ["8000:8000"]
+    depends_on:
+      db: { condition: service_healthy }
   frontend:
     build: ./frontend
     environment:
       BACKEND_URL: http://backend:8000
     ports: ["3000:3000"]
     depends_on: [backend]
+volumes:
+  pgdata:

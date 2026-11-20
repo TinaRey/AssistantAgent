@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, chat, files, health
+from app.api import auth, chat, documents, files, health
 from app.core.config import get_settings
 from app.core.security import require_auth
 
@@ -21,6 +21,7 @@ def create_app() -> FastAPI:
     protected = [Depends(require_auth)]
     app.include_router(chat.router, prefix="/api", dependencies=protected)
     app.include_router(files.router, prefix="/api", dependencies=protected)
+    app.include_router(documents.router, prefix="/api", dependencies=protected)
     return app
 
 

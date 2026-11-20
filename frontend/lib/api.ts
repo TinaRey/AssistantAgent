@@ -9,7 +9,9 @@ export class ApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
     ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
+    headers: init?.body instanceof FormData
+      ? init?.headers
+      : { "Content-Type": "application/json", ...init?.headers },
     cache: "no-store",
   });
   if (res.status === 401 && path !== "/auth/login" && typeof window !== "undefined") {
@@ -20,6 +22,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const detail = typeof body?.detail === "string" ? body.detail : null;
     throw new ApiError(res.status, detail ?? friendlyStatus(res.status));
   }
+  if (res.status === 204) return undefined as T;
   return res.json();
 }
 
@@ -45,3 +48,16 @@ export const approveAction = (id: string) =>
   request<PendingAction>(`/actions/${id}/approve`, { method: "POST" });
 export const rejectAction = (id: string) =>
   request<PendingAction>(`/actions/${id}/reject`, { method: "POST" });
+
+export type KnowledgeDocument = {
+  id: string; filename: string; kind: string; size_bytes: number; chunk_count: number; created_at: string;
+};
+export const listDocuments = () => request<KnowledgeDocument[]>("/documents");
+export const uploadDocument = (file: File) => {
+  const body = new FormData();
+  body.append("file", file);
+  return request<KnowledgeDocument>("/documents", { method: "POST", body });
+};
+export const addNote = (title: string, text: string) =>
+  request<KnowledgeDocument>("/documents/note", { method: "POST", body: JSON.stringify({ title, text }) });
+export const deleteDocument = (id: string) => request<void>(`/documents/${id}`, { method: "DELETE" });

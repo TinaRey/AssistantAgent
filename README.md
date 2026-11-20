@@ -8,7 +8,7 @@ This repository is independent from the Shopify theme repository.
 
 ## Status
 
-Done: scaffold, backend tools/orchestration, password login, French chat UI with editable previews. Next: knowledge base (document upload) and a real search provider. See [docs/architecture.md](docs/architecture.md) for the plan.
+Done: scaffold, backend tools/orchestration, password login, French chat UI with editable previews, knowledge base (upload PDF/DOCX/TXT/MD + notes, pgvector search). Next: a real search provider (Phase 4). See [docs/architecture.md](docs/architecture.md) for the plan.
 
 ## Prerequisites
 
@@ -20,6 +20,10 @@ Done: scaffold, backend tools/orchestration, password login, French chat UI with
 
 ```bash
 cp .env.example .env          # then set APP_PASSWORD, SECRET_KEY and OPENAI_API_KEY
+
+# Terminal 0: local Postgres + pgvector (Docker), then create the tables
+docker compose up -d --wait db
+(cd backend && uv sync && uv run alembic upgrade head)
 
 # Terminal 1: backend  -> http://localhost:8000  (docs at /docs)
 cd backend && uv sync && uv run uvicorn app.main:app --reload --port 8000
@@ -45,3 +49,15 @@ cd frontend && npm run typecheck && npm run build
 
 See [.env.example](.env.example). `APP_PASSWORD`, `SECRET_KEY` and `OPENAI_API_KEY` are needed to use the chat;
 never commit `.env`.
+
+## Knowledge base
+
+Open **Documents Pantalelle** in the sidebar to upload files or paste notes (e.g. meeting minutes).
+Text is extracted, split into ~1000-character passages, embedded with OpenAI
+(`EMBEDDING_MODEL`, default `text-embedding-3-small`) and stored in Postgres/pgvector.
+The assistant retrieves passages with the `retrieve_knowledge` tool and cites file/page.
+Scanned (image-only) PDFs have no text and are rejected with a clear message.
+
+Database: local Docker Postgres in development; Supabase (EU region) in production by changing only
+`DATABASE_URL`. Schema changes go through Alembic (`uv run alembic upgrade head`).
+Automated tests use the `pantalelle_test` database from the same container and skip themselves if it is down.

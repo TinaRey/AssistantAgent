@@ -1,4 +1,5 @@
 import { conversationTitle, type Conversation } from "@/lib/types";
+import Link from "next/link";
 import { SidebarResizer } from "./SidebarResizer";
 
 type Props = {
@@ -16,6 +17,7 @@ export function Sidebar({
     <aside className="sidebar">
       <h1>Pantalelle</h1>
       <button className="primary" onClick={onNew}>+ Nouvelle conversation</button>
+      <Link className="navlink" href="/documents">📄 Documents Pantalelle</Link>
       <nav aria-label="Conversations">
         {conversations.map((c) => {
           const title = conversationTitle(c);
