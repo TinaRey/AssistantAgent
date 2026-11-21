@@ -40,4 +40,5 @@ SPEC = ToolSpec(
     input_model=GeneratePresentationInput,
     func=generate_presentation,  # type: ignore[arg-type]
     timeout_s=90,
+    ui_card=True,
 )

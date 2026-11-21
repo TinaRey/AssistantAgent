@@ -12,6 +12,21 @@ export function ChatApp() {
   const sidebar = useSidebarWidth();
   const { send, loading } = useChat(active?.id, active?.messages ?? [], update);
 
+  function editMessage(id: string, content: string) {
+    update(active.id, (msgs) =>
+      msgs.map((m) => (m.id === id ? { ...m, content, edited: true } : m)),
+    );
+  }
+
+  function saveEdits(callId: string, edits: Record<string, any> | undefined) {
+    update(active.id, (msgs) =>
+      msgs.map((m) => ({
+        ...m,
+        artifacts: m.artifacts?.map((a) => (a.call_id === callId ? { ...a, edits } : a)),
+      })),
+    );
+  }
+
   async function signOut() {
     await logout().catch(() => undefined);
     window.location.href = "/login";
@@ -27,7 +42,10 @@ export function ChatApp() {
         width={sidebar.width} onResize={sidebar.setWidth} onResetWidth={sidebar.reset}
       />
       <section className="chat">
-        <MessageList messages={active.messages} loading={loading} onSuggest={send} />
+        <MessageList
+          messages={active.messages} loading={loading} onSuggest={send}
+          onEdit={saveEdits} onRevise={send} onEditMessage={editMessage}
+        />
         <Composer onSend={send} disabled={loading} />
       </section>
     </div>

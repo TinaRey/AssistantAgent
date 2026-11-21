@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import type { Message } from "@/lib/types";
 import { Markdown } from "./Markdown";
+import { EditableBubble } from "./EditableBubble";
 import { ArtifactView } from "./ArtifactView";
 import { PendingActionCard } from "./PendingActionCard";
 
@@ -12,8 +13,13 @@ const SUGGESTIONS = [
 ];
 
 export function MessageList({
-  messages, loading, onSuggest,
-}: { messages: Message[]; loading: boolean; onSuggest: (t: string) => void }) {
+  messages, loading, onSuggest, onEdit, onRevise, onEditMessage,
+}: {
+  messages: Message[]; loading: boolean; onSuggest: (t: string) => void;
+  onEdit: (callId: string, edits: Record<string, any> | undefined) => void;
+  onRevise: (instruction: string, context: string) => void;
+  onEditMessage: (id: string, content: string) => void;
+}) {
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
@@ -35,11 +41,16 @@ export function MessageList({
       {messages.map((m) => (
         <article key={m.id} className={`msg ${m.role} ${m.error ? "failed" : ""}`}>
           {m.content && (
-            <div className="bubble">
-              {m.role === "assistant" && !m.error ? <Markdown>{m.content}</Markdown> : m.content}
-            </div>
+            m.role === "assistant" && !m.error
+              ? <EditableBubble message={m} onSave={(c) => onEditMessage(m.id, c)} />
+              : <div className="bubble">{m.content}</div>
           )}
-          {m.artifacts?.map((a) => <ArtifactView key={a.call_id} artifact={a} />)}
+          {m.artifacts?.map((a, i) => (
+            <ArtifactView
+              key={a.call_id} artifact={a} busy={loading} onEdit={onEdit} onRevise={onRevise}
+              startIndex={postsBefore(m.artifacts!, i) + 1}
+            />
+          ))}
           {m.pending?.map((p) => <PendingActionCard key={p.id} action={p} />)}
           {m.traces && m.traces.length > 0 && <ToolActivity traces={m.traces} />}
         </article>
@@ -71,4 +82,12 @@ function ToolActivity({ traces }: { traces: Message["traces"] }) {
       </ul>
     </details>
   );
+}
+
+/** Number of LinkedIn posts shown in earlier cards of the same message, so numbering never restarts at 1. */
+function postsBefore(artifacts: NonNullable<Message["artifacts"]>, index: number): number {
+  return artifacts
+    .slice(0, index)
+    .filter((a) => a.tool === "generate_linkedin_post")
+    .reduce((n, a) => n + ((a.data.posts as unknown[])?.length ?? 0), 0);
 }

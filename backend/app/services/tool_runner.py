@@ -16,6 +16,11 @@ from app.tools.base import ToolContext, ToolError, ToolSpec
 
 logger = logging.getLogger(__name__)
 
+CARD_NOTE = (
+    "Ce résultat est DÉJÀ affiché à l'utilisatrice sous forme de fiche modifiable. Ne le recopie "
+    "pas : réponds en 2 à 4 phrases (points clés, limites) et propose une prochaine étape."
+)
+
 
 @dataclass
 class ToolOutcome:
@@ -95,7 +100,13 @@ class ToolRunner:
         trace = self.tracer.record(
             call_id=call.id, tool=spec.name, status="ok", started_at=started, arguments=dumped
         )
-        return ToolOutcome(output.model_dump_json(), trace, output=output.model_dump(mode="json"))
+        dumped_out = output.model_dump(mode="json")
+        content = (
+            json.dumps({"result": dumped_out, "note": CARD_NOTE}, ensure_ascii=False)
+            if spec.ui_card
+            else output.model_dump_json()
+        )
+        return ToolOutcome(content, trace, output=dumped_out)
 
     async def approve(self, action_id: str) -> PendingAction:
         """Human-approved execution of a stored action. Runs at most once."""

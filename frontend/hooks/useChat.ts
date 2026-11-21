@@ -10,12 +10,12 @@ export function useChat(conversationId: string | undefined, messages: Message[],
   const inFlight = useRef(false);
 
   const send = useCallback(
-    async (text: string) => {
+    async (text: string, context?: string) => {
       const content = text.trim();
       if (!conversationId || !content || inFlight.current) return;
       inFlight.current = true;
       setLoading(true);
-      const userMsg: Message = { id: crypto.randomUUID(), role: "user", content };
+      const userMsg: Message = { id: crypto.randomUUID(), role: "user", content, context };
       update(conversationId, (m) => [...m, userMsg]);
       try {
         // Errors are UI-only: they are not replayed to the model.

@@ -4,10 +4,19 @@ import { LinkedInPreview } from "./LinkedInPreview";
 import { PresentationCard } from "./PresentationCard";
 import { ResearchCard } from "./ResearchCard";
 
-export function ArtifactView({ artifact }: { artifact: Artifact }) {
+export type DraftProps = {
+  busy: boolean;
+  onEdit: (callId: string, edits: Record<string, any> | undefined) => void;
+  onRevise: (instruction: string, context: string) => void;
+};
+
+export function ArtifactView({
+  artifact, busy, onEdit, onRevise, startIndex,
+}: { artifact: Artifact; startIndex?: number } & DraftProps) {
+  const draft = { artifact, busy, onEdit, onRevise };
   switch (artifact.tool) {
-    case "generate_email": return <EmailPreview data={artifact.data} />;
-    case "generate_linkedin_post": return <LinkedInPreview data={artifact.data} />;
+    case "generate_email": return <EmailPreview {...draft} />;
+    case "generate_linkedin_post": return <LinkedInPreview {...draft} startIndex={startIndex} />;
     case "generate_presentation": return <PresentationCard data={artifact.data} />;
     case "search_company": return <ResearchCard data={artifact.data} />;
     case "retrieve_knowledge": return <KnowledgeCard data={artifact.data} />;

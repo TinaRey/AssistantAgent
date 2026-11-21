@@ -67,8 +67,14 @@ class GenerateEmailInput(BaseModel):
     recipient_name: str | None = Field(default=None, max_length=200)
     research_summary: str | None = Field(default=None, max_length=6000)
     knowledge_context: str | None = Field(default=None, max_length=6000)
-    tone: str = Field(default="professional and warm", max_length=100)
+    tone: str = Field(default="professionnel et chaleureux", max_length=100)
     language: str = Field(default="fr", max_length=20)
+    current_draft: str | None = Field(
+        default=None,
+        max_length=8000,
+        description="Existing draft to REVISE (possibly edited by the user). Keep what the "
+        "instructions do not ask to change.",
+    )
 
 
 class EmailBody(BaseModel):
@@ -88,9 +94,15 @@ class EmailDraft(BaseModel):
 # ---- generate_linkedin_post ----------------------------------------------
 class GenerateLinkedInPostInput(BaseModel):
     topic: str = Field(min_length=1, max_length=1000)
-    tone: str = Field(default="authentic and inspiring", max_length=100)
+    tone: str = Field(default="authentique et inspirant", max_length=100)
     language: str = Field(default="fr", max_length=20)
     num_variants: int = Field(default=2, ge=1, le=5)
+    current_draft: str | None = Field(
+        default=None,
+        max_length=8000,
+        description="Existing draft to REVISE (possibly edited by the user). Keep what the "
+        "instructions do not ask to change.",
+    )
     knowledge_context: str | None = Field(default=None, max_length=6000)
 
 
@@ -98,7 +110,6 @@ class LinkedInPost(BaseModel):
     text: str
     hashtags: list[str] = []
     visual_suggestion: str | None = None
-    tone: str | None = None
 
 
 class LinkedInPosts(BaseModel):
