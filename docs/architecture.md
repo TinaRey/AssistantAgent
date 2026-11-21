@@ -31,7 +31,7 @@ Next.js (chat UI, previews, upload)  --REST-->  FastAPI
 ## Decisions
 
 - **Orchestrator** = one LLM call loop using OpenAI tool calling. No agent framework.
-- **Tools return structured data** (Pydantic); the LLM never lays out slides, python-pptx fills a fixed template.
+- **Tools return structured data** (Pydantic); the LLM never lays out slides, python-pptx fills the brand layout (`brand.json` + `pptx_builder.py`).
 - **Retrieval**: pgvector cosine search from the start (French natural-language queries match poorly on keywords). Originals are stored in Postgres because Render's disk is ephemeral. Duplicates are blocked by SHA-256.
 - **Research**: `SearchProvider` interface: `TavilySearchProvider` when `SEARCH_API_KEY` is set, otherwise a mock that returns nothing. Every finding keeps its source URL; contacts are only reported if found in a source.
 - **Email**: editable preview, copy, `mailto:`. No sending. Gmail OAuth later behind a `MailProvider` interface.

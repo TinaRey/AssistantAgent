@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.integrations.embeddings import Embedder
+from app.integrations.templates import TemplatePdf
 from app.knowledge_base.chunking import chunk_sections
 from app.knowledge_base.extract import ExtractionError, Section, extract, kind_for
 from app.models import Chunk, Document
@@ -107,6 +108,30 @@ class KnowledgeService:
             result = s.execute(delete(Document).where(Document.id == doc_id))
             s.commit()
             return result.rowcount > 0
+
+    # ---- templates (implements the TemplateSource protocol) --------------
+    async def list_pdf_names(self) -> list[str]:
+        def work() -> list[str]:
+            with self._sessions() as s:
+                return list(
+                    s.scalars(
+                        select(Document.filename)
+                        .where(Document.kind == "pdf")
+                        .order_by(Document.created_at.desc())
+                    )
+                )
+
+        return await asyncio.to_thread(work)
+
+    async def get_pdf(self, filename: str) -> TemplatePdf | None:
+        def work() -> TemplatePdf | None:
+            with self._sessions() as s:
+                doc = s.scalar(
+                    select(Document).where(Document.kind == "pdf", Document.filename == filename)
+                )
+                return TemplatePdf(doc.filename, doc.data) if doc else None
+
+        return await asyncio.to_thread(work)
 
     # ---- retrieval (implements the KnowledgeStore protocol) -------------
     async def search(self, query: str, top_k: int) -> list[Passage]:

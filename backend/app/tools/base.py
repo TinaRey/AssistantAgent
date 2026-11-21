@@ -1,13 +1,15 @@
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel
 
+from app.integrations.images import ImageProvider
 from app.integrations.knowledge import KnowledgeStore
 from app.integrations.llm import LLMClient
 from app.integrations.search import SearchProvider
+from app.integrations.templates import TemplateSource
+from app.services.presentations import PresentationStore
 
 
 class ToolError(Exception):
@@ -19,7 +21,9 @@ class ToolContext:
     llm: LLMClient
     search: SearchProvider
     knowledge: KnowledgeStore
-    storage_dir: Path
+    presentations: PresentationStore
+    images: ImageProvider
+    templates: TemplateSource
 
 
 ToolFunc = Callable[[Any, ToolContext], Awaitable[BaseModel]]

@@ -66,3 +66,24 @@ export const uploadDocument = (file: File) => {
 export const addNote = (title: string, text: string) =>
   request<KnowledgeDocument>("/documents/note", { method: "POST", body: JSON.stringify({ title, text }) });
 export const deleteDocument = (id: string) => request<void>(`/documents/${id}`, { method: "DELETE" });
+
+export type PresentationSlide = {
+  title: string; bullets: string[]; speaker_notes?: string | null; suggested_visual?: string | null;
+  numbered: boolean; image_prompt?: string | null; image_id?: string | null;
+};
+export type PresentationData = {
+  id: string; content: { title: string; slides: PresentationSlide[] };
+  company: string | null; visual_style: string | null;
+  image_count: number; max_images: number; image_cost_usd: number; pdf_url: string; pptx_url: string;
+  theme: ThemeColors | null; default_theme: ThemeColors;
+};
+export type ThemeColors = { primary: string; tint: string };
+export const getPresentation = (id: string) => request<PresentationData>(`/presentations/${id}`);
+export const savePresentation = (
+  id: string, content: PresentationData["content"] & { theme: ThemeColors | null },
+) =>
+  request<PresentationData>(`/presentations/${id}`, { method: "PUT", body: JSON.stringify(content) });
+export const generateSlideImage = (id: string, index: number, description?: string) =>
+  request<PresentationData>(`/presentations/${id}/slides/${index}/image`, {
+    method: "POST", body: JSON.stringify({ description: description?.trim() || null }),
+  });

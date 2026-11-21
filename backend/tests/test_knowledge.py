@@ -1,42 +1,16 @@
-import hashlib
 import io
-import math
-import os
-import re
 
 import pytest
 from docx import Document as DocxDocument
 from fastapi.testclient import TestClient
-from sqlalchemy import text
-from sqlalchemy.exc import OperationalError
 
 from app.api.deps import build_runtime, get_runtime
 from app.core.security import require_auth
-from app.db.base import Base, make_engine, make_session_factory
 from app.knowledge_base.chunking import split_text
 from app.knowledge_base.extract import ExtractionError, extract, kind_for
-from app.knowledge_base.service import DuplicateDocumentError, KnowledgeService
+from app.knowledge_base.service import DuplicateDocumentError
 from app.main import app
-from app.models.document import EMBEDDING_DIM
 from tests.conftest import FakeLLM
-
-TEST_DB = os.getenv(
-    "TEST_DATABASE_URL", "postgresql+psycopg://pantalelle:pantalelle@localhost:5432/pantalelle_test"
-)
-
-
-class FakeEmbedder:
-    """Deterministic bag-of-words hashing: similar words -> similar vectors. No network."""
-
-    async def embed(self, texts: list[str]) -> list[list[float]]:
-        out = []
-        for t in texts:
-            v = [0.0] * EMBEDDING_DIM
-            for w in re.findall(r"\w+", t.lower()):
-                v[int(hashlib.md5(w.encode()).hexdigest(), 16) % EMBEDDING_DIM] += 1.0
-            norm = math.sqrt(sum(x * x for x in v)) or 1.0
-            out.append([x / norm for x in v])
-        return out
 
 
 # ---- pure unit tests (no DB) ----------------------------------------------
@@ -82,21 +56,6 @@ def test_extract_pdf_pages() -> None:
 
 
 # ---- integration tests against the local pgvector database -----------------
-@pytest.fixture
-def kb():  # type: ignore[no-untyped-def]
-    engine = make_engine(TEST_DB)
-    try:
-        with engine.begin() as c:
-            c.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-    except OperationalError:
-        pytest.skip("test Postgres not reachable (run: docker compose up -d --wait db)")
-    Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
-    yield KnowledgeService(make_session_factory(engine), FakeEmbedder())
-    Base.metadata.drop_all(engine)
-    engine.dispose()
-
-
 async def test_ingest_search_returns_relevant_passage_with_source(kb) -> None:  # type: ignore[no-untyped-def]
     await kb.ingest_file(
         "histoire.txt", "Pantalelle est née en 2020 à Lyon, atelier de lampes.".encode()
@@ -123,7 +82,14 @@ async def test_retrieve_knowledge_tool_uses_the_store(kb, make_runtime) -> None:
 
     await kb.ingest_note("Valeurs", "Artisanat durable et fabrication locale.")
     *_, ctx = make_runtime(FakeLLM())
-    ctx = type(ctx)(llm=ctx.llm, search=ctx.search, knowledge=kb, storage_dir=ctx.storage_dir)
+    ctx = type(ctx)(
+        llm=ctx.llm,
+        search=ctx.search,
+        knowledge=kb,
+        presentations=ctx.presentations,
+        images=ctx.images,
+        templates=ctx.templates,
+    )
     out = await retrieve_knowledge(RetrieveKnowledgeInput(query="artisanat durable"), ctx)
     assert out.passages[0].source == "Valeurs (note)" and out.note is None
 
@@ -131,7 +97,7 @@ async def test_retrieve_knowledge_tool_uses_the_store(kb, make_runtime) -> None:
 # ---- HTTP layer -------------------------------------------------------------
 @pytest.fixture
 def client(kb, tmp_path):  # type: ignore[no-untyped-def]
-    rt = build_runtime(FakeLLM(), tmp_path, knowledge=kb)
+    rt = build_runtime(FakeLLM(), knowledge=kb)
     app.dependency_overrides[get_runtime] = lambda: rt
     app.dependency_overrides[require_auth] = lambda: None
     yield TestClient(app)
@@ -173,7 +139,7 @@ def test_documents_503_without_database(tmp_path, monkeypatch) -> None:  # type:
     monkeypatch.setattr(
         "app.api.deps.get_settings", lambda: Settings(database_url="", _env_file=None)
     )
-    rt = build_runtime(FakeLLM(), tmp_path)
+    rt = build_runtime(FakeLLM())
     assert rt.knowledge is None
     app.dependency_overrides[get_runtime] = lambda: rt
     app.dependency_overrides[require_auth] = lambda: None

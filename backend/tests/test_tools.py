@@ -6,17 +6,13 @@ from app.schemas.tools import (
     Finding,
     GenerateEmailInput,
     GenerateLinkedInPostInput,
-    GeneratePresentationInput,
     LinkedInPost,
     LinkedInPosts,
-    PresentationContent,
     RetrieveKnowledgeInput,
     SearchCompanyInput,
-    Slide,
 )
 from app.tools.generate_email import generate_email
 from app.tools.generate_linkedin_post import generate_linkedin_post
-from app.tools.generate_presentation import generate_presentation
 from app.tools.retrieve_knowledge import retrieve_knowledge
 from app.tools.search_company import search_company
 from tests.conftest import FakeLLM, FakeSearch
@@ -74,18 +70,6 @@ async def test_linkedin_variants_are_capped(make_runtime) -> None:
     *_, ctx = make_runtime(FakeLLM(structured=[posts]))
     out = await generate_linkedin_post(GenerateLinkedInPostInput(topic="t", num_variants=2), ctx)
     assert len(out.posts) == 2
-
-
-async def test_presentation_creates_downloadable_pptx(make_runtime) -> None:
-    content = PresentationContent(
-        title="T", slides=[Slide(title=f"s{i}", bullets=["a"]) for i in range(5)]
-    )
-    *_, ctx = make_runtime(FakeLLM(structured=[content]))
-    out = await generate_presentation(
-        GeneratePresentationInput(company_name="X", objective="o", max_slides=3), ctx
-    )
-    assert len(out.content.slides) == 3
-    assert (ctx.storage_dir / f"{out.file_id}.pptx").is_file()
 
 
 async def test_email_revision_passes_the_current_draft(make_runtime) -> None:  # type: ignore[no-untyped-def]

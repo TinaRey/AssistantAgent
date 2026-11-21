@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     max_tool_iterations: int = Field(default=6, ge=1, le=15)
     llm_timeout_s: float = 60.0
     storage_dir: str = "storage"
+    image_model: str = "gpt-image-2"
+    image_quality: str = "medium"
+    image_size: str = "1024x1024"
+    image_timeout_s: float = 120.0
+    max_images_per_presentation: int = 6
+    image_cost_estimate_usd: float = 0.05  # shown to the user; indicative only
     embedding_model: str = "text-embedding-3-small"
     max_upload_mb: int = 10
 

@@ -124,13 +124,49 @@ class GeneratePresentationInput(BaseModel):
     knowledge_context: str | None = Field(default=None, max_length=6000)
     language: str = Field(default="fr", max_length=20)
     max_slides: int = Field(default=8, ge=3, le=15)
+    visual_style: str | None = Field(
+        default=None,
+        max_length=200,
+        description="Visual universe requested by the user, e.g. 'vert, bleu, nature, outdoor'.",
+    )
+    template: str | None = Field(
+        default=None,
+        max_length=200,
+        description="File name (or distinctive words) of an uploaded PDF presentation to use as the "
+        "model: its structure, wording and colors guide the new deck.",
+    )
+    illustrations: int = Field(
+        default=0,
+        ge=0,
+        le=3,
+        description="Number of AI-generated explanatory images to create NOW. Leave 0 unless the "
+        "user explicitly asked for generated images (each one costs money).",
+    )
 
 
-class Slide(BaseModel):
+class DraftSlide(BaseModel):
+    """What the LLM writes for one slide."""
+
     title: str
     bullets: list[str] = Field(default=[], max_length=6)
     speaker_notes: str | None = None
     suggested_visual: str | None = None
+    numbered: bool = False  # numbered list instead of check marks
+    image_prompt: str | None = None  # short subject of an explanatory illustration, if useful
+
+
+class DraftPresentation(BaseModel):
+    title: str
+    slides: list[DraftSlide]
+    # Only when a visual style/ambiance was requested: 6-digit hex colors without '#'.
+    theme_primary: str | None = None  # dark enough for text on white
+    theme_tint: str | None = None  # very light background tint
+
+
+class Slide(DraftSlide):
+    """A stored slide: same as the draft plus the attached image, if any."""
+
+    image_id: str | None = None
 
 
 class PresentationContent(BaseModel):
@@ -139,6 +175,10 @@ class PresentationContent(BaseModel):
 
 
 class PresentationResult(BaseModel):
+    presentation_id: str
+    template: str | None = None
+    theme: dict[str, str] | None = None
     content: PresentationContent
-    file_id: str
-    download_url: str
+    pdf_url: str
+    pptx_url: str
+    warnings: list[str] = []

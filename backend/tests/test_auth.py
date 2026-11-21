@@ -20,7 +20,10 @@ def test_protected_routes_require_login(client) -> None:  # type: ignore[no-unty
     assert client.post("/api/chat", json={"messages": []}).status_code == 401
     assert client.get("/api/traces").status_code == 401
     assert client.get("/api/actions").status_code == 401
-    assert client.get("/api/files/" + "0" * 32).status_code == 401
+    for path in ("/pdf", "/pptx", ""):
+        assert client.get("/api/presentations/" + "0" * 32 + path).status_code == 401
+    assert client.put("/api/presentations/" + "0" * 32, json={}).status_code == 401
+    assert client.post("/api/presentations/" + "0" * 32 + "/slides/0/image").status_code == 401
     assert client.get("/api/health").status_code == 200  # public
 
 

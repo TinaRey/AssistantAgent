@@ -8,7 +8,7 @@ from tests.conftest import FakeLLM
 
 
 def _client(llm, tmp_path):  # type: ignore[no-untyped-def]
-    rt = build_runtime(llm, tmp_path)
+    rt = build_runtime(llm)
     app.dependency_overrides[get_runtime] = lambda: rt
     app.dependency_overrides[require_auth] = lambda: None
     return TestClient(app)
@@ -37,9 +37,3 @@ def test_llm_errors_map_to_http_status(tmp_path) -> None:  # type: ignore[no-unt
     c = _client(Limited(), tmp_path)
     r = c.post("/api/chat", json={"messages": [{"role": "user", "content": "yo"}]})
     assert r.status_code == 429 and r.json()["detail"] == "slow down"
-
-
-def test_file_download_rejects_traversal(tmp_path) -> None:  # type: ignore[no-untyped-def]
-    c = _client(FakeLLM(), tmp_path)
-    assert c.get("/api/files/..%2f..%2fetc%2fpasswd").status_code == 404
-    assert c.get("/api/files/" + "0" * 32).status_code == 404

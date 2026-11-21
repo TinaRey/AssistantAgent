@@ -1,0 +1,25 @@
+{
+  "_comment": "Pantalelle brand for generated PowerPoint files. Values come from 'Pantalelle_presentation generale_French.pdf'. Edit freely; no code change needed.",
+  "colors": {
+    "red": "C00000",
+    "peach": "FDEADA",
+    "cover_panel": "FBE5D6",
+    "text": "000000",
+    "muted": "898989"
+  },
+  "font": "Calibri",
+  "mono_font": "Consolas",
+  "logo_file": "logo.png",
+  "cover_tag": "PRÉSENTATION",
+  "closing_title": "Merci beaucoup pour votre intérêt",
+  "closing_lines": [
+    "Je suis ouverte à toute proposition.",
+    "N'hésitez pas à me contacter."
+  ],
+  "contact": {
+    "name": "Clara CARRICAJO",
+    "role": "Ingénieure innovation",
+    "phone": "+33 6 56 75 23 11",
+    "email": "contact@pantalelle.fr"
+  }
+}
