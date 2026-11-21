@@ -1,5 +1,5 @@
 # `docker compose up -d db` for local Postgres only (recommended for development),
-# or `docker compose up --build` to run everything in containers.
+# or `docker compose up --build` to run everything in containers (production images).
 services:
   db:
     image: pgvector/pgvector:pg16
@@ -20,6 +20,8 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql+psycopg://pantalelle:pantalelle@db:5432/pantalelle
+      PORT: "8000"
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}  # same value as the frontend; empty = no gate (local only)
     ports: ["8000:8000"]
     depends_on:
       db: { condition: service_healthy }
@@ -27,6 +29,8 @@ services:
     build: ./frontend
     environment:
       BACKEND_URL: http://backend:8000
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}
+      PORT: "3000"
     ports: ["3000:3000"]
     depends_on: [backend]
 volumes:

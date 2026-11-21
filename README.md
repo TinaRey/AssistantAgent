@@ -38,6 +38,11 @@ Conversations are stored in the browser (localStorage) only.
 
 Or with Docker: `docker compose up --build`.
 
+## Deploy (Render + Supabase)
+
+`render.yaml` describes the two services; follow [docs/deployment.md](docs/deployment.md) (Supabase project, secrets,
+Blueprint, verification checklist, troubleshooting).
+
 ## Tests and checks
 
 ```bash

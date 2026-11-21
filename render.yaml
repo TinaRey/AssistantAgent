@@ -1,0 +1,49 @@
+# Render Blueprint: two public web services (Docker). Create it with  Render dashboard > New > Blueprint.
+# Values marked `sync: false` are asked once at creation: they are secrets and never live in this file.
+# Step-by-step guide: docs/deployment.md
+services:
+  # ---- Backend (FastAPI). Only the frontend proxy may call it: see INTERNAL_API_KEY. ----
+  - type: web
+    name: pantalelle-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    branch: main
+    region: frankfurt # same region as the Supabase project (EU)
+    plan: free # `free` sleeps after 15 min and wakes in ~1 min. For daily use switch to `starter`.
+    healthCheckPath: /api/health
+    envVars:
+      - key: ENVIRONMENT
+        value: production # the app refuses to start with weak or missing secrets
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DATABASE_URL
+        sync: false # Supabase "Session pooler" connection string
+      - key: APP_PASSWORD
+        sync: false # the password the user types to open the app
+      - key: SECRET_KEY
+        generateValue: true # signs session cookies
+      - key: INTERNAL_API_KEY
+        sync: false # SAME value as on pantalelle-app
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: SEARCH_API_KEY
+        sync: false # Tavily; leave empty to disable web research
+
+  # ---- Frontend (Next.js). The only public entry point for users. ----
+  - type: web
+    name: pantalelle-app
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    branch: main
+    region: frankfurt
+    plan: free
+    healthCheckPath: /login
+    envVars:
+      - key: BACKEND_URL
+        sync: false # public URL of pantalelle-api, e.g. https://pantalelle-api.onrender.com
+      - key: INTERNAL_API_KEY
+        sync: false # SAME value as on pantalelle-api
