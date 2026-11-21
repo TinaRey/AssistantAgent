@@ -1,5 +1,5 @@
 [project]
-name = "pantallele-assistant-backend"
+name = "pantalelle-assistant-backend"
 version = "0.1.0"
 requires-python = ">=3.12,<3.14"
 dependencies = [
@@ -8,6 +8,14 @@ dependencies = [
   "pydantic-settings>=2.4",
   "openai>=3.57.0",
   "python-pptx>=1.0.2",
+  "sqlalchemy>=2.1.9",
+  "psycopg[binary]>=3.3.9",
+  "pgvector>=0.5.1",
+  "alembic>=1.20.1",
+  "pypdf>=7.1.1",
+  "python-docx>=1.2.0",
+  "python-multipart>=0.0.34",
+  "httpx>=0.28.1",
 ]
 
 [dependency-groups]

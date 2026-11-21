@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import type { Message } from "@/lib/types";
+import { Markdown } from "./Markdown";
 import { ArtifactView } from "./ArtifactView";
 import { PendingActionCard } from "./PendingActionCard";
 
@@ -33,7 +34,11 @@ export function MessageList({
     <div className="messages" aria-live="polite">
       {messages.map((m) => (
         <article key={m.id} className={`msg ${m.role} ${m.error ? "failed" : ""}`}>
-          {m.content && <p className="bubble">{m.content}</p>}
+          {m.content && (
+            <div className="bubble">
+              {m.role === "assistant" && !m.error ? <Markdown>{m.content}</Markdown> : m.content}
+            </div>
+          )}
           {m.artifacts?.map((a) => <ArtifactView key={a.call_id} artifact={a} />)}
           {m.pending?.map((p) => <PendingActionCard key={p.id} action={p} />)}
           {m.traces && m.traces.length > 0 && <ToolActivity traces={m.traces} />}

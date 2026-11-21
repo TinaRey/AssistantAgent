@@ -9,6 +9,7 @@ EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 class SearchCompanyInput(BaseModel):
     company_name: str = Field(min_length=1, max_length=200)
     focus: str | None = Field(default=None, max_length=300, description="e.g. 'partnerships'")
+    language: str = Field(default="fr", max_length=20, description="Language of the written output")
 
 
 class Finding(BaseModel):

@@ -17,9 +17,12 @@ class Settings(BaseSettings):
     cookie_secure: bool = False  # set true when served over HTTPS
     database_url: str = ""
     search_api_key: str = ""
+    search_timeout_s: float = 15.0
     max_tool_iterations: int = Field(default=6, ge=1, le=15)
     llm_timeout_s: float = 60.0
     storage_dir: str = "storage"
+    embedding_model: str = "text-embedding-3-small"
+    max_upload_mb: int = 10
 
     @property
     def cors_origin_list(self) -> list[str]:

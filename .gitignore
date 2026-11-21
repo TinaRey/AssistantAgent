@@ -14,3 +14,4 @@ out/
 next-env.d.ts
 backend/storage/
 .DS_Store
+data/

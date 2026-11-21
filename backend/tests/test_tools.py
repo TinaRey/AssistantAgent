@@ -26,6 +26,7 @@ async def test_search_company_without_results_invents_nothing(make_runtime) -> N
     *_, ctx = make_runtime(FakeLLM())
     out = await search_company(SearchCompanyInput(company_name="Urgo"), ctx)
     assert out.findings == [] and out.contacts == [] and out.warnings
+    assert "Rien n'a été vérifié" in out.warnings[-1]
 
 
 async def test_search_company_drops_ungrounded_data(make_runtime) -> None:
