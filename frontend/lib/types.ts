@@ -4,7 +4,11 @@ export type ToolStatus =
 export type ToolTrace = {
   id: string; call_id: string; tool: string; status: ToolStatus; duration_ms: number; error: string | null;
 };
-export type Artifact = { call_id: string; tool: string; data: Record<string, any> };
+export type Artifact = {
+  call_id: string; tool: string; data: Record<string, any>;
+  /** The user's own edits of a draft (email/post), kept in this browser. */
+  edits?: Record<string, any>;
+};
 export type PendingAction = {
   id: string; tool: string; arguments: Record<string, unknown>;
   status: "pending" | "approved" | "rejected" | "failed";
@@ -19,6 +23,10 @@ export type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  /** Sent to the assistant with the message but not displayed (e.g. the current draft). */
+  context?: string;
+  /** The user rewrote this assistant message by hand. */
+  edited?: boolean;
   error?: boolean;
   traces?: ToolTrace[];
   artifacts?: Artifact[];

@@ -1,6 +1,7 @@
 from functools import lru_cache
+from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,6 +10,8 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=("../.env", ".env"), extra="ignore")
 
+    environment: Literal["development", "production"] = "development"
+    internal_api_key: str = ""  # shared with the frontend proxy; protects the public backend
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
     cors_origins: str = Field(default="http://localhost:3000")
@@ -23,6 +26,34 @@ class Settings(BaseSettings):
     storage_dir: str = "storage"
     embedding_model: str = "text-embedding-3-small"
     max_upload_mb: int = 10
+
+    @field_validator("database_url")
+    @classmethod
+    def _driver(cls, url: str) -> str:
+        """Accept the plain URL that Supabase/Render give (postgres:// or postgresql://)."""
+        for prefix in ("postgres://", "postgresql://"):
+            if url.startswith(prefix):
+                return "postgresql+psycopg://" + url[len(prefix) :]
+        return url
+
+    @property
+    def is_production(self) -> bool:
+        return self.environment == "production"
+
+    def production_problems(self) -> list[str]:
+        """Settings that must be right before serving real users."""
+        problems = []
+        if len(self.app_password) < 10:
+            problems.append("APP_PASSWORD must be set (at least 10 characters)")
+        if len(self.secret_key) < 32:
+            problems.append("SECRET_KEY must be set (at least 32 characters)")
+        if len(self.internal_api_key) < 32:
+            problems.append("INTERNAL_API_KEY must be set (at least 32 characters)")
+        if not self.cookie_secure:
+            problems.append("COOKIE_SECURE must be true (the app is served over HTTPS)")
+        if not self.database_url:
+            problems.append("DATABASE_URL must be set")
+        return problems
 
     @property
     def cors_origin_list(self) -> list[str]:

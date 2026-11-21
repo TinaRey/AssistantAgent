@@ -71,3 +71,4 @@ class LoginLimiter:
 
 
 limiter = LoginLimiter()
+global_limiter = LoginLimiter(max_failures=30, window_s=300)

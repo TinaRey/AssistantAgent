@@ -6,7 +6,9 @@ from app.tools.base import ToolContext, ToolSpec
 _PROMPT = (
     "You write introductory business emails for Pantalelle, an e-commerce brand. "
     "Use only the facts provided; do not invent Pantalelle facts, partnerships or figures. "
-    "Do not include a recipient address. Keep it concise and personal."
+    "Do not include a recipient address. Keep it concise and personal. "
+    "If a current draft is provided, revise it: apply the requested changes and keep the rest "
+    "(wording, facts, structure) as is."
 )
 
 
@@ -15,7 +17,8 @@ async def generate_email(inp: GenerateEmailInput, ctx: ToolContext) -> EmailDraf
         f"Target company: {inp.company_name}\nObjective: {inp.objective}\n"
         f"Recipient name: {inp.recipient_name or 'unknown'}\nTone: {inp.tone}\nLanguage: {inp.language}\n"
         f"Research about the company:\n{inp.research_summary or 'none'}\n"
-        f"Pantalelle knowledge:\n{inp.knowledge_context or 'none'}"
+        f"Pantalelle knowledge:\n{inp.knowledge_context or 'none'}\n"
+        f"Current draft to revise:\n{inp.current_draft or 'none (write a new email)'}"
     )
     out = await ctx.llm.structured(
         [{"role": "system", "content": _PROMPT}, {"role": "user", "content": brief}], EmailBody
@@ -32,4 +35,5 @@ SPEC = ToolSpec(
     "Only pass recipient_email if it was verified in a source or given by the user.",
     input_model=GenerateEmailInput,
     func=generate_email,  # type: ignore[arg-type]
+    ui_card=True,
 )

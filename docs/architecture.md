@@ -40,3 +40,17 @@ Next.js (chat UI, previews, upload)  --REST-->  FastAPI
 ## Phases
 
 0 scaffold, 1 chat, 2 knowledge base, 4 research (done) · 3 email/LinkedIn/PPTX tools · 4 research · 5 integrations
+
+## Production topology
+
+```
+Browser --HTTPS--> pantalelle-app (Next.js)  --HTTPS + X-Internal-Key--> pantalelle-api (FastAPI) --> Supabase Postgres
+                    /api/[...path] proxy                                  refuses calls without the key         (pgvector)
+```
+
+- The browser only knows the frontend. The proxy (`frontend/app/api/[...path]/route.ts`) reads `BACKEND_URL` and
+  `INTERNAL_API_KEY` at runtime and forwards the real client IP (`X-Client-IP`) for login rate limiting.
+- The backend is a public web service on Render's free plan, so `InternalKeyMiddleware` rejects every `/api` call
+  without the shared key (except `/api/health`). In `ENVIRONMENT=production` it refuses to start with weak secrets
+  and exposes no API docs.
+- Migrations run at container start (`backend/start.sh`): Render's free plan has no pre-deploy command.

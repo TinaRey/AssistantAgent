@@ -107,3 +107,12 @@ input, textarea { font: inherit; width: 100%; padding: .55rem .7rem; border: 1px
 .md code { background: var(--bg); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
 .md table { border-collapse: collapse; font-size: .9rem; }
 .md th, .md td { border: 1px solid var(--line); padding: .3rem .6rem; }
+
+.tag.edited { color: var(--ok); border-color: var(--ok); margin-left: .4rem; }
+.revise { display: flex; gap: .5rem; border-top: 1px dashed var(--line); padding-top: .7rem; }
+.revise input { flex: 1; min-width: 0; }
+.revise button { white-space: nowrap; }
+
+.bubble-actions { display: flex; gap: .8rem; align-items: center; margin-top: .4rem; font-size: .8rem; }
+.bubble-actions .link { font-size: .8rem; padding: 0; }
+.bubble.editing { width: 100%; max-width: 100%; display: grid; gap: .6rem; white-space: normal; }

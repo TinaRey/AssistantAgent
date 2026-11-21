@@ -100,3 +100,29 @@ async def test_rejected_action_never_runs(make_runtime) -> None:
     runner.reject(res.pending_actions[0].id)
     await runner.approve(res.pending_actions[0].id)
     assert _send.count == before  # type: ignore[attr-defined]
+
+
+async def test_card_results_carry_a_do_not_repeat_note_for_the_model(make_runtime) -> None:  # type: ignore[no-untyped-def]
+    from app.schemas.tools import LinkedInPost, LinkedInPosts
+
+    seen: list[list[dict]] = []
+
+    class Spy(FakeLLM):
+        async def chat(self, messages, tools):  # type: ignore[no-untyped-def]
+            seen.append(list(messages))
+            return await super().chat(messages, tools)
+
+    llm = Spy(
+        [call("generate_linkedin_post", '{"topic": "t"}'), AssistantTurn(content="ok")],
+        structured=[LinkedInPosts(posts=[LinkedInPost(text="p", hashtags=["a"])])],
+    )
+    orch, *_ = make_runtime(llm)
+    await orch.run(user("x"))
+    tool_msg = next(m for m in seen[-1] if m["role"] == "tool")
+    assert "DÉJÀ affiché" in tool_msg["content"] and '"posts"' in tool_msg["content"]
+    # a tool without a UI card is passed through untouched
+    llm2 = Spy([call("retrieve_knowledge", '{"query": "b"}'), AssistantTurn(content="ok")])
+    seen.clear()
+    orch2, *_ = make_runtime(llm2)
+    await orch2.run(user("x"))
+    assert "DÉJÀ" not in next(m for m in seen[-1] if m["role"] == "tool")["content"]

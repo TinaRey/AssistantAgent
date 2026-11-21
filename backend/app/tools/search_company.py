@@ -114,4 +114,5 @@ SPEC = ToolSpec(
     input_model=SearchCompanyInput,
     func=search_company,  # type: ignore[arg-type]
     timeout_s=60,
+    ui_card=True,
 )

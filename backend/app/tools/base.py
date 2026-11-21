@@ -35,6 +35,8 @@ class ToolSpec:
     # True for anything with an external side effect (sending, publishing...).
     # Such tools are NEVER run by the model loop: they wait for human approval.
     requires_approval: bool = False
+    # True when the UI shows the result as a card: the model is told not to repeat it in the chat.
+    ui_card: bool = False
 
     def openai_schema(self) -> dict[str, Any]:
         return {

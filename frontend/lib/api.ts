@@ -37,10 +37,15 @@ export const login = (password: string) =>
   request<{ ok: boolean }>("/auth/login", { method: "POST", body: JSON.stringify({ password }) });
 export const logout = () => request<{ ok: boolean }>("/auth/logout", { method: "POST" });
 
-export function sendChat(messages: Pick<Message, "role" | "content">[]) {
+export function sendChat(messages: Pick<Message, "role" | "content" | "context">[]) {
   return request<ChatResponse>("/chat", {
     method: "POST",
-    body: JSON.stringify({ messages: messages.map(({ role, content }) => ({ role, content })) }),
+    body: JSON.stringify({
+      messages: messages.map(({ role, content, context }) => ({
+        role,
+        content: context ? `${content}\n\n${context}` : content,
+      })),
+    }),
   });
 }
 
