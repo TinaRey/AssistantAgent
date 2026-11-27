@@ -1,6 +1,6 @@
-# Pantalelle Assistant
+# Assistant
 
-Private AI business assistant for Pantalelle: company research, prospecting emails,
+Private AI business assistant for a company: company research, prospecting emails,
 PowerPoint decks and LinkedIn content. It is a conversational assistant with
 specialised tools, **not** an autonomous agent: the user approves every external action.
 
